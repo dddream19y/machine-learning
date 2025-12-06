@@ -1,0 +1,14 @@
+{
+  "tensorflow": {
+    "model_sgd": {
+      "accuracy": 0.5823529362678528
+    },
+    "model_adam": {
+      "accuracy": 0.9226890802383423
+    },
+    "model_final": {
+      "train_accuracy": 0.9536231756210327,
+      "test_accuracy": 0.8320000171661377
+    }
+  }
+}

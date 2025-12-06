@@ -218,3 +218,50 @@ predict_heart_disease([58, 1, 2, 150, 270, 0, 1, 111, 1, 2.5, 2])
 
 predict_heart_disease([49,0,3,160,180,0,0,156,0,1,2])
 
+
+# ============================================================
+# 以下為網頁應用程式所需的模型儲存區塊
+# 此區塊不影響上方原本的程式碼邏輯
+# ============================================================
+
+def save_models_for_webapp():
+    """
+    儲存所有模型供網頁應用程式使用
+    執行此函數將模型儲存到當前目錄
+    """
+    import json
+    
+    # 儲存 Logistic Regression 模型
+    joblib.dump(best_log, "logistic_regression.pkl")
+    print("已儲存: logistic_regression.pkl")
+    
+    # 儲存 Random Forest 模型
+    joblib.dump(best_rf, "random_forest.pkl")
+    print("已儲存: random_forest.pkl")
+    
+    # 儲存模型評估指標供網頁顯示
+    metrics = {
+        'sklearn': {
+            'logistic_regression': {
+                'accuracy': float(accuracy_score(y_test, y_pred_log)),
+                'roc_auc': float(roc_auc_score(y_test, y_prob_log)),
+                'params': grid_log.best_params_
+            },
+            'random_forest': {
+                'accuracy': float(accuracy_score(y_test, y_pred_rf)),
+                'roc_auc': float(roc_auc_score(y_test, y_prob_rf)),
+                'params': grid_rf.best_params_
+            }
+        },
+        'selected_features': X.columns[selected_features].tolist()
+    }
+    
+    with open('sklearn_metrics.json', 'w', encoding='utf-8') as f:
+        json.dump(metrics, f, ensure_ascii=False, indent=2)
+    print("已儲存: sklearn_metrics.json")
+    
+    print("\n所有 Sklearn 模型已儲存完成！")
+
+# 執行儲存（取消下方註解即可執行）
+# save_models_for_webapp()
+

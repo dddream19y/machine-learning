@@ -27,17 +27,5 @@
     "exercise angina",
     "oldpeak",
     "ST slope"
-  ],
-  "tensorflow": {
-    "model_sgd": {
-      "accuracy": 0.8873949646949768
-    },
-    "model_adam": {
-      "accuracy": 0.938655436038971
-    },
-    "model_final": {
-      "train_accuracy": 0.9492753744125366,
-      "test_accuracy": 0.8320000171661377
-    }
-  }
+  ]
 }

@@ -17,7 +17,10 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(BASE_DIR)
 DATA_DIR = os.path.join(PARENT_DIR, 'data')
-MODELS_DIR = os.path.join(BASE_DIR, 'models')
+
+# 原始模型路徑（使用 sklearn_model 和 tensorflow_model 資料夾中的模型）
+SKLEARN_MODEL_DIR = os.path.join(PARENT_DIR, 'sklearn_model')
+TENSORFLOW_MODEL_DIR = os.path.join(PARENT_DIR, 'tensorflow_model')
 
 # 特徵名稱
 FEATURE_NAMES = [
@@ -68,63 +71,70 @@ class ModelManager:
         self.model_metrics = {}
         
     def load_sklearn_models(self):
-        """載入 Sklearn 模型"""
+        """載入 Sklearn 模型（從 sklearn_model 資料夾）"""
         try:
-            sklearn_model_path = os.path.join(MODELS_DIR, 'sklearn')
-            
             # 載入 scaler 和 selector
-            self.scaler = joblib.load(os.path.join(sklearn_model_path, 'scaler.pkl'))
-            self.selector = joblib.load(os.path.join(sklearn_model_path, 'selector.pkl'))
+            self.scaler = joblib.load(os.path.join(SKLEARN_MODEL_DIR, 'scaler.pkl'))
+            self.selector = joblib.load(os.path.join(SKLEARN_MODEL_DIR, 'selector.pkl'))
             
             # 載入 Logistic Regression 模型
             self.sklearn_models['logistic_regression'] = joblib.load(
-                os.path.join(sklearn_model_path, 'logistic_regression.pkl')
+                os.path.join(SKLEARN_MODEL_DIR, 'logistic_regression.pkl')
             )
             
             # 載入 Random Forest 模型
             self.sklearn_models['random_forest'] = joblib.load(
-                os.path.join(sklearn_model_path, 'random_forest.pkl')
+                os.path.join(SKLEARN_MODEL_DIR, 'random_forest.pkl')
             )
             
-            print("Sklearn 模型載入成功")
+            print("Sklearn 模型載入成功（從 sklearn_model 資料夾）")
             return True
         except Exception as e:
             print(f"載入 Sklearn 模型失敗: {e}")
             return False
     
     def load_tf_models(self):
-        """載入 TensorFlow 模型"""
+        """載入 TensorFlow 模型（從 tensorflow_model 資料夾）"""
         try:
-            tf_model_path = os.path.join(MODELS_DIR, 'tensorflow')
-            
             # 載入正規化參數
-            norm_params = np.load(os.path.join(tf_model_path, 'normalization_params.npz'))
+            norm_params = np.load(os.path.join(TENSORFLOW_MODEL_DIR, 'normalization_params.npz'))
             self.tf_scaler_mean = norm_params['mean']
             self.tf_scaler_std = norm_params['std']
             
             # 載入三個 TensorFlow 模型
             self.tf_models['tf_model_sgd'] = keras.models.load_model(
-                os.path.join(tf_model_path, 'model_sgd.keras')
+                os.path.join(TENSORFLOW_MODEL_DIR, 'model_sgd.keras')
             )
             self.tf_models['tf_model_adam'] = keras.models.load_model(
-                os.path.join(tf_model_path, 'model_adam.keras')
+                os.path.join(TENSORFLOW_MODEL_DIR, 'model_adam.keras')
             )
             self.tf_models['tf_model_final'] = keras.models.load_model(
-                os.path.join(tf_model_path, 'model_final.keras')
+                os.path.join(TENSORFLOW_MODEL_DIR, 'model_final.keras')
             )
             
-            print("TensorFlow 模型載入成功")
+            print("TensorFlow 模型載入成功（從 tensorflow_model 資料夾）")
             return True
         except Exception as e:
             print(f"載入 TensorFlow 模型失敗: {e}")
             return False
     
     def load_metrics(self):
-        """載入模型評估指標"""
+        """載入模型評估指標（從原始模型資料夾）"""
         try:
-            metrics_path = os.path.join(MODELS_DIR, 'metrics.json')
-            with open(metrics_path, 'r', encoding='utf-8') as f:
-                self.model_metrics = json.load(f)
+            # 載入 sklearn 指標
+            sklearn_metrics_path = os.path.join(SKLEARN_MODEL_DIR, 'sklearn_metrics.json')
+            if os.path.exists(sklearn_metrics_path):
+                with open(sklearn_metrics_path, 'r', encoding='utf-8') as f:
+                    sklearn_metrics = json.load(f)
+                self.model_metrics.update(sklearn_metrics)
+            
+            # 載入 tensorflow 指標
+            tf_metrics_path = os.path.join(TENSORFLOW_MODEL_DIR, 'tf_metrics.json')
+            if os.path.exists(tf_metrics_path):
+                with open(tf_metrics_path, 'r', encoding='utf-8') as f:
+                    tf_metrics = json.load(f)
+                self.model_metrics.update(tf_metrics)
+            
             print("模型指標載入成功")
             return True
         except Exception as e:
@@ -277,7 +287,7 @@ def training():
 def api_training_history():
     """API: 獲取 TensorFlow 訓練歷史"""
     try:
-        history_path = os.path.join(MODELS_DIR, 'tensorflow', 'training_history.json')
+        history_path = os.path.join(TENSORFLOW_MODEL_DIR, 'training_history.json')
         with open(history_path, 'r') as f:
             history = json.load(f)
         return jsonify(history)
