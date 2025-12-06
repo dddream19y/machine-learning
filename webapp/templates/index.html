@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}首頁 - 心臟病預測系統{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-heartbeat pulse me-3"></i>心臟病預測系統
+        </h1>
+        <p class="lead mb-4">
+            結合傳統機器學習與深度學習技術，提供精準的心臟病風險評估
+        </p>
+        <a href="/predict" class="btn btn-light btn-lg me-3">
+            <i class="fas fa-stethoscope me-2"></i>開始預測
+        </a>
+        <a href="/compare" class="btn btn-outline-light btn-lg">
+            <i class="fas fa-chart-line me-2"></i>查看模型比較
+        </a>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="container mb-5">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="feature-icon heart">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h4 class="card-title">即時預測</h4>
+                    <p class="card-text text-muted">
+                        輸入您的健康指標，系統將即時分析並預測心臟病風險機率
+                    </p>
+                    <a href="/predict" class="btn btn-primary mt-3">
+                        立即測試 <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="feature-icon chart">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h4 class="card-title">模型比較</h4>
+                    <p class="card-text text-muted">
+                        對比 5 種不同模型的預測結果，包含 Sklearn 與 TensorFlow 模型
+                    </p>
+                    <a href="/compare" class="btn btn-secondary mt-3">
+                        比較模型 <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="feature-icon brain">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4 class="card-title">訓練視覺化</h4>
+                    <p class="card-text text-muted">
+                        查看 TensorFlow 模型的訓練過程，包含 Loss 與 Accuracy 曲線
+                    </p>
+                    <a href="/training" class="btn btn-outline-primary mt-3">
+                        查看訓練 <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Models Overview -->
+<section class="container mb-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-robot me-2"></i>使用的模型
+    </h2>
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Scikit-learn 模型</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-chart-line me-2 text-primary"></i>
+                                Logistic Regression
+                            </span>
+                            <span class="badge bg-primary">GridSearchCV 調參</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-tree me-2 text-success"></i>
+                                Random Forest
+                            </span>
+                            <span class="badge bg-success">GridSearchCV 調參</span>
+                        </li>
+                    </ul>
+                    <p class="mt-3 mb-0 text-muted small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        使用 SelectKBest 進行特徵選取，選取前 8 個重要特徵
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-brain me-2"></i>TensorFlow 模型</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-network-wired me-2 text-info"></i>
+                                MLP (SGD Optimizer)
+                            </span>
+                            <span class="badge bg-info">Binary CE</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-network-wired me-2 text-warning"></i>
+                                MLP (Adam Optimizer)
+                            </span>
+                            <span class="badge bg-warning">Categorical CE</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-network-wired me-2 text-danger"></i>
+                                MLP (Final - Validation)
+                            </span>
+                            <span class="badge bg-danger">Train/Val Split</span>
+                        </li>
+                    </ul>
+                    <p class="mt-3 mb-0 text-muted small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        多層感知器架構：11 → 10 → 8 → 2 (softmax)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dataset Info -->
+<section class="container mb-5">
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-database me-2"></i>資料集資訊</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-file-csv me-2 text-success"></i>heart_disease.csv</h6>
+                    <p class="text-muted">用於 Sklearn 模型訓練</p>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="fas fa-file-csv me-2 text-danger"></i>heart_statlog_cleveland_hungary_final.csv</h6>
+                    <p class="text-muted">用於 TensorFlow 模型訓練（Cleveland & Hungary 合併資料）</p>
+                </div>
+            </div>
+            <hr>
+            <h6>特徵說明（11 個特徵）：</h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>年齡 (age)</li>
+                        <li><i class="fas fa-check text-success me-2"></i>性別 (sex)</li>
+                        <li><i class="fas fa-check text-success me-2"></i>胸痛類型 (chest pain type)</li>
+                        <li><i class="fas fa-check text-success me-2"></i>靜息血壓 (resting bp s)</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>膽固醇 (cholesterol)</li>
+                        <li><i class="fas fa-check text-success me-2"></i>空腹血糖 (fasting blood sugar)</li>
+                        <li><i class="fas fa-check text-success me-2"></i>靜息心電圖 (resting ecg)</li>
+                        <li><i class="fas fa-check text-success me-2"></i>最大心率 (max heart rate)</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>運動誘發心絞痛 (exercise angina)</li>
+                        <li><i class="fas fa-check text-success me-2"></i>ST 段下降 (oldpeak)</li>
+                        <li><i class="fas fa-check text-success me-2"></i>ST 斜率 (ST slope)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

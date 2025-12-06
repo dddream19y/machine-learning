@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}模型比較 - 心臟病預測系統{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-balance-scale me-2"></i>多模型預測比較
+    </h2>
+    <p class="text-center text-muted mb-5">
+        輸入健康指標，同時查看 5 種不同模型的預測結果對比
+    </p>
+
+    <div class="row">
+        <!-- Input Form -->
+        <div class="col-lg-5 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>輸入數據</h5>
+                </div>
+                <div class="card-body">
+                    <form id="compareForm">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">年齡</label>
+                                <input type="number" class="form-control form-control-sm" name="age" value="50" min="1"
+                                    max="120">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">性別</label>
+                                <select class="form-select form-select-sm" name="sex">
+                                    <option value="1">男性</option>
+                                    <option value="0">女性</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">胸痛類型</label>
+                                <select class="form-select form-select-sm" name="chest pain type">
+                                    <option value="1">典型心絞痛</option>
+                                    <option value="2">非典型心絞痛</option>
+                                    <option value="3" selected>非心絞痛</option>
+                                    <option value="4">無症狀</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">靜息血壓</label>
+                                <input type="number" class="form-control form-control-sm" name="resting bp s"
+                                    value="130" min="80" max="200">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">膽固醇</label>
+                                <input type="number" class="form-control form-control-sm" name="cholesterol" value="220"
+                                    min="100" max="600">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">空腹血糖 > 120</label>
+                                <select class="form-select form-select-sm" name="fasting blood sugar">
+                                    <option value="0" selected>否</option>
+                                    <option value="1">是</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">靜息心電圖</label>
+                                <select class="form-select form-select-sm" name="resting ecg">
+                                    <option value="0" selected>正常</option>
+                                    <option value="1">ST-T 異常</option>
+                                    <option value="2">左心室肥大</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">最大心率</label>
+                                <input type="number" class="form-control form-control-sm" name="max heart rate"
+                                    value="150" min="60" max="220">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">運動誘發心絞痛</label>
+                                <select class="form-select form-select-sm" name="exercise angina">
+                                    <option value="0" selected>否</option>
+                                    <option value="1">是</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">ST 下降值</label>
+                                <input type="number" class="form-control form-control-sm" name="oldpeak" value="1.5"
+                                    min="-5" max="10" step="0.1">
+                            </div>
+                            <div class="col-12 mb-2">
+                                <label class="form-label small">ST 斜率</label>
+                                <select class="form-select form-select-sm" name="ST slope">
+                                    <option value="1">上升</option>
+                                    <option value="2" selected>平坦</option>
+                                    <option value="3">下降</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sync me-2"></i>比較所有模型
+                                <span class="loading-spinner spinner-border spinner-border-sm ms-2"
+                                    role="status"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>模型預測結果對比</h5>
+                </div>
+                <div class="card-body" id="compareResults">
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-hand-point-left fa-3x mb-3"></i>
+                        <p>請填寫左側表單並點擊「比較所有模型」</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>風險機率對比圖</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="compareChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let compareChart = null;
+
+    document.getElementById('compareForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const spinner = document.querySelector('.loading-spinner');
+        const resultsPanel = document.getElementById('compareResults');
+
+        spinner.style.display = 'inline-block';
+
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+
+        try {
+            const response = await fetch('/api/compare', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const results = await response.json();
+
+            if (results.error) {
+                resultsPanel.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>${results.error}
+                </div>
+            `;
+            } else {
+                displayResults(results);
+                updateChart(results);
+            }
+        } catch (error) {
+            resultsPanel.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>比較失敗：${error.message}
+            </div>
+        `;
+        }
+
+        spinner.style.display = 'none';
+    });
+
+    function displayResults(results) {
+        const panel = document.getElementById('compareResults');
+
+        const modelInfo = {
+            'logistic_regression': { name: 'Logistic Regression', type: 'sklearn', icon: 'fa-chart-line', color: 'warning' },
+            'random_forest': { name: 'Random Forest', type: 'sklearn', icon: 'fa-tree', color: 'success' },
+            'tf_model_sgd': { name: 'TensorFlow (SGD)', type: 'tensorflow', icon: 'fa-brain', color: 'info' },
+            'tf_model_adam': { name: 'TensorFlow (Adam)', type: 'tensorflow', icon: 'fa-brain', color: 'primary' },
+            'tf_model_final': { name: 'TensorFlow (Final)', type: 'tensorflow', icon: 'fa-brain', color: 'danger' }
+        };
+
+        let html = '<div class="table-responsive"><table class="table table-hover">';
+        html += '<thead><tr><th>模型</th><th>類型</th><th>預測結果</th><th>風險機率</th></tr></thead><tbody>';
+
+        for (const [key, result] of Object.entries(results)) {
+            const info = modelInfo[key] || { name: key, type: 'unknown', icon: 'fa-robot', color: 'secondary' };
+            const resultClass = result.prediction === 1 ? 'text-danger' : 'text-success';
+            const resultIcon = result.prediction === 1 ? 'fa-exclamation-triangle' : 'fa-check-circle';
+
+            html += `
+            <tr>
+                <td>
+                    <i class="fas ${info.icon} me-2 text-${info.color}"></i>
+                    ${info.name}
+                </td>
+                <td><span class="badge bg-${info.color}">${info.type}</span></td>
+                <td class="${resultClass}">
+                    <i class="fas ${resultIcon} me-1"></i>${result.result_text}
+                </td>
+                <td>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-${result.prediction === 1 ? 'danger' : 'success'}" 
+                             style="width: ${result.probability}%">
+                            ${result.probability}%
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+        }
+
+        html += '</tbody></table></div>';
+
+        // 計算一致性
+        const predictions = Object.values(results).map(r => r.prediction);
+        const consensus = predictions.every(p => p === predictions[0]);
+        const avgProb = Object.values(results).reduce((sum, r) => sum + r.probability, 0) / Object.keys(results).length;
+
+        html += `
+        <div class="alert ${consensus ? 'alert-success' : 'alert-warning'} mt-3">
+            <i class="fas ${consensus ? 'fa-check-circle' : 'fa-exclamation-triangle'} me-2"></i>
+            <strong>模型一致性：</strong>${consensus ? '所有模型預測結果一致' : '模型預測結果存在分歧'}
+            <br>
+            <small class="text-muted">平均風險機率：${avgProb.toFixed(2)}%</small>
+        </div>
+    `;
+
+        panel.innerHTML = html;
+    }
+
+    function updateChart(results) {
+        const ctx = document.getElementById('compareChart').getContext('2d');
+
+        const labels = [];
+        const data = [];
+        const colors = [];
+
+        const colorMap = {
+            'logistic_regression': '#f39c12',
+            'random_forest': '#27ae60',
+            'tf_model_sgd': '#3498db',
+            'tf_model_adam': '#9b59b6',
+            'tf_model_final': '#e74c3c'
+        };
+
+        const nameMap = {
+            'logistic_regression': 'Logistic Reg.',
+            'random_forest': 'Random Forest',
+            'tf_model_sgd': 'TF (SGD)',
+            'tf_model_adam': 'TF (Adam)',
+            'tf_model_final': 'TF (Final)'
+        };
+
+        for (const [key, result] of Object.entries(results)) {
+            labels.push(nameMap[key] || key);
+            data.push(result.probability);
+            colors.push(colorMap[key] || '#95a5a6');
+        }
+
+        if (compareChart) {
+            compareChart.destroy();
+        }
+
+        compareChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '風險機率 (%)',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: colors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '風險機率 (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: '各模型預測風險機率對比'
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

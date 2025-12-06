@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}關於 - 心臟病預測系統{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-info-circle me-2"></i>關於本專案
+    </h2>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Project Overview -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>專案概述</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        本專案為機器學習課程期末專題，旨在使用多種機器學習方法建構心臟病風險預測系統。
+                        系統整合了傳統機器學習（Scikit-learn）與深度學習（TensorFlow/Keras）兩種不同的技術路線，
+                        並提供視覺化的網頁介面供使用者進行預測測試與模型比較。
+                    </p>
+                    <hr>
+                    <h6><i class="fas fa-bullseye me-2"></i>專案目標</h6>
+                    <ul>
+                        <li>實作多種機器學習模型進行心臟病預測</li>
+                        <li>比較傳統機器學習與深度學習的效能差異</li>
+                        <li>建立使用者友善的預測介面</li>
+                        <li>視覺化呈現模型訓練過程與評估結果</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tech Stack -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-code me-2"></i>技術架構</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6><i class="fab fa-python me-2 text-primary"></i>後端技術</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Python 3.x</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Flask (Web Framework)</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Scikit-learn</li>
+                                <li><i class="fas fa-check text-success me-2"></i>TensorFlow / Keras</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Pandas / NumPy</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6><i class="fab fa-html5 me-2 text-danger"></i>前端技術</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>HTML5 / CSS3</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Bootstrap 5</li>
+                                <li><i class="fas fa-check text-success me-2"></i>JavaScript (ES6+)</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Chart.js</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Font Awesome</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Models -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>模型說明</h5>
+                </div>
+                <div class="card-body">
+                    <h6><i class="fas fa-cogs me-2 text-warning"></i>Scikit-learn 模型</h6>
+                    <table class="table table-bordered mb-4">
+                        <thead class="table-light">
+                            <tr>
+                                <th>模型</th>
+                                <th>說明</th>
+                                <th>調參方法</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Logistic Regression</td>
+                                <td>邏輯迴歸分類器，線性模型</td>
+                                <td>GridSearchCV (C, solver)</td>
+                            </tr>
+                            <tr>
+                                <td>Random Forest</td>
+                                <td>隨機森林分類器，集成學習方法</td>
+                                <td>GridSearchCV (n_estimators, max_depth, min_samples_split)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h6><i class="fas fa-brain me-2 text-danger"></i>TensorFlow 模型</h6>
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>模型</th>
+                                <th>Optimizer</th>
+                                <th>Loss Function</th>
+                                <th>特點</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Model SGD</td>
+                                <td>SGD</td>
+                                <td>Binary Crossentropy</td>
+                                <td>基礎 MLP，單輸出 Sigmoid</td>
+                            </tr>
+                            <tr>
+                                <td>Model Adam</td>
+                                <td>Adam</td>
+                                <td>Categorical Crossentropy</td>
+                                <td>改進版 MLP，雙輸出 Softmax</td>
+                            </tr>
+                            <tr>
+                                <td>Model Final</td>
+                                <td>Adam</td>
+                                <td>Categorical Crossentropy</td>
+                                <td>包含驗證集分割，防止過擬合</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Dataset -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-database me-2"></i>資料集資訊</h5>
+                </div>
+                <div class="card-body">
+                    <p>本專案使用以下心臟病相關資料集：</p>
+                    <ul>
+                        <li><strong>heart_disease.csv</strong> - 用於 Sklearn 模型</li>
+                        <li><strong>heart_statlog_cleveland_hungary_final.csv</strong> - Cleveland 與 Hungary 合併資料集，用於
+                            TensorFlow 模型</li>
+                    </ul>
+                    <hr>
+                    <h6>資料集特徵（11 個輸入特徵）：</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>特徵名稱</th>
+                                    <th>說明</th>
+                                    <th>資料類型</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>age</td>
+                                    <td>年齡</td>
+                                    <td>數值</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>sex</td>
+                                    <td>性別 (1=男, 0=女)</td>
+                                    <td>類別</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>chest pain type</td>
+                                    <td>胸痛類型 (1-4)</td>
+                                    <td>類別</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>resting bp s</td>
+                                    <td>靜息血壓 (mm Hg)</td>
+                                    <td>數值</td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>cholesterol</td>
+                                    <td>血清膽固醇 (mg/dl)</td>
+                                    <td>數值</td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td>fasting blood sugar</td>
+                                    <td>空腹血糖 > 120 mg/dl</td>
+                                    <td>類別</td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>resting ecg</td>
+                                    <td>靜息心電圖結果 (0-2)</td>
+                                    <td>類別</td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td>max heart rate</td>
+                                    <td>最大心率</td>
+                                    <td>數值</td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td>exercise angina</td>
+                                    <td>運動誘發心絞痛</td>
+                                    <td>類別</td>
+                                </tr>
+                                <tr>
+                                    <td>10</td>
+                                    <td>oldpeak</td>
+                                    <td>ST 段下降值</td>
+                                    <td>數值</td>
+                                </tr>
+                                <tr>
+                                    <td>11</td>
+                                    <td>ST slope</td>
+                                    <td>運動 ST 段斜率 (1-3)</td>
+                                    <td>類別</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        目標變數：target (0=無心臟病, 1=有心臟病)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>免責聲明</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">
+                        <strong>重要提醒：</strong>本系統僅供學術研究與教育目的使用，預測結果不能作為醫療診斷依據。
+                        如有任何健康疑慮，請諮詢專業醫療人員。機器學習模型的預測準確度受限於訓練資料與模型架構，
+                        無法保證 100% 正確。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

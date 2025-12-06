@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}效果展示 - 心臟病預測系統{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-chart-bar me-2"></i>模型效果展示
+    </h2>
+    <p class="text-center text-muted mb-5">
+        各模型的評估指標與效能比較
+    </p>
+
+    <!-- Sklearn Models -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h4 class="mb-4">
+                <span class="badge bg-warning me-2">Sklearn</span>傳統機器學習模型
+            </h4>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Logistic Regression</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-4">
+                        <div class="col-6">
+                            <div class="metric-value" id="lr_accuracy">--</div>
+                            <p class="text-muted mb-0">準確率</p>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-value" id="lr_auc">--</div>
+                            <p class="text-muted mb-0">ROC AUC</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>最佳超參數：</h6>
+                    <ul class="list-unstyled" id="lr_params">
+                        <li><i class="fas fa-cog me-2 text-warning"></i>C: --</li>
+                        <li><i class="fas fa-cog me-2 text-warning"></i>solver: --</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-tree me-2"></i>Random Forest</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-4">
+                        <div class="col-6">
+                            <div class="metric-value text-success" id="rf_accuracy">--</div>
+                            <p class="text-muted mb-0">準確率</p>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-value text-success" id="rf_auc">--</div>
+                            <p class="text-muted mb-0">ROC AUC</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>最佳超參數：</h6>
+                    <ul class="list-unstyled" id="rf_params">
+                        <li><i class="fas fa-cog me-2 text-success"></i>n_estimators: --</li>
+                        <li><i class="fas fa-cog me-2 text-success"></i>max_depth: --</li>
+                        <li><i class="fas fa-cog me-2 text-success"></i>min_samples_split: --</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TensorFlow Models -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h4 class="mb-4">
+                <span class="badge bg-danger me-2">TensorFlow</span>深度學習模型
+            </h4>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-brain me-2"></i>Model SGD</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="metric-value text-info" id="tf_sgd_accuracy">--</div>
+                    <p class="text-muted">準確率</p>
+                    <hr>
+                    <p class="small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Optimizer: SGD<br>
+                        Loss: Binary Crossentropy
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-brain me-2"></i>Model Adam</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="metric-value text-primary" id="tf_adam_accuracy">--</div>
+                    <p class="text-muted">準確率</p>
+                    <hr>
+                    <p class="small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Optimizer: Adam<br>
+                        Loss: Categorical Crossentropy
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-brain me-2"></i>Model Final</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="metric-value text-danger" style="font-size: 1.8rem;" id="tf_final_train_acc">--
+                            </div>
+                            <p class="text-muted small mb-0">訓練準確率</p>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-value text-danger" style="font-size: 1.8rem;" id="tf_final_test_acc">--
+                            </div>
+                            <p class="text-muted small mb-0">測試準確率</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <p class="small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Train/Validation Split<br>
+                        Epochs: 150
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Chart -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>模型準確率比較</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="metricsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Selection Info -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>特徵選取（SelectKBest）</h5>
+                </div>
+                <div class="card-body">
+                    <p>使用 chi2 卡方檢驗選取前 8 個最重要的特徵：</p>
+                    <div id="selectedFeatures" class="d-flex flex-wrap gap-2">
+                        <!-- 動態載入 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let metricsChart = null;
+
+    async function loadMetrics() {
+        try {
+            const response = await fetch('/api/metrics');
+            const metrics = await response.json();
+
+            if (metrics.error) {
+                console.error('載入指標失敗:', metrics.error);
+                return;
+            }
+
+            // 更新 Sklearn 模型指標
+            if (metrics.sklearn) {
+                const lr = metrics.sklearn.logistic_regression;
+                const rf = metrics.sklearn.random_forest;
+
+                if (lr) {
+                    document.getElementById('lr_accuracy').textContent = (lr.accuracy * 100).toFixed(1) + '%';
+                    document.getElementById('lr_auc').textContent = (lr.roc_auc * 100).toFixed(1) + '%';
+                    if (lr.params) {
+                        document.getElementById('lr_params').innerHTML = `
+                        <li><i class="fas fa-cog me-2 text-warning"></i>C: ${lr.params.C}</li>
+                        <li><i class="fas fa-cog me-2 text-warning"></i>solver: ${lr.params.solver}</li>
+                    `;
+                    }
+                }
+
+                if (rf) {
+                    document.getElementById('rf_accuracy').textContent = (rf.accuracy * 100).toFixed(1) + '%';
+                    document.getElementById('rf_auc').textContent = (rf.roc_auc * 100).toFixed(1) + '%';
+                    if (rf.params) {
+                        document.getElementById('rf_params').innerHTML = `
+                        <li><i class="fas fa-cog me-2 text-success"></i>n_estimators: ${rf.params.n_estimators}</li>
+                        <li><i class="fas fa-cog me-2 text-success"></i>max_depth: ${rf.params.max_depth}</li>
+                        <li><i class="fas fa-cog me-2 text-success"></i>min_samples_split: ${rf.params.min_samples_split}</li>
+                    `;
+                    }
+                }
+            }
+
+            // 更新 TensorFlow 模型指標
+            if (metrics.tensorflow) {
+                const sgd = metrics.tensorflow.model_sgd;
+                const adam = metrics.tensorflow.model_adam;
+                const final = metrics.tensorflow.model_final;
+
+                if (sgd) {
+                    document.getElementById('tf_sgd_accuracy').textContent = (sgd.accuracy * 100).toFixed(1) + '%';
+                }
+                if (adam) {
+                    document.getElementById('tf_adam_accuracy').textContent = (adam.accuracy * 100).toFixed(1) + '%';
+                }
+                if (final) {
+                    document.getElementById('tf_final_train_acc').textContent = (final.train_accuracy * 100).toFixed(1) + '%';
+                    document.getElementById('tf_final_test_acc').textContent = (final.test_accuracy * 100).toFixed(1) + '%';
+                }
+            }
+
+            // 更新特徵選取
+            if (metrics.selected_features) {
+                const container = document.getElementById('selectedFeatures');
+                container.innerHTML = metrics.selected_features.map(f =>
+                    `<span class="badge bg-primary p-2"><i class="fas fa-check me-1"></i>${f}</span>`
+                ).join('');
+            }
+
+            // 更新圖表
+            updateMetricsChart(metrics);
+
+        } catch (error) {
+            console.error('載入指標錯誤:', error);
+        }
+    }
+
+    function updateMetricsChart(metrics) {
+        const ctx = document.getElementById('metricsChart').getContext('2d');
+
+        const labels = ['Logistic Reg.', 'Random Forest', 'TF (SGD)', 'TF (Adam)', 'TF (Final)'];
+        const data = [];
+
+        // 收集準確率數據
+        if (metrics.sklearn) {
+            data.push(metrics.sklearn.logistic_regression?.accuracy * 100 || 0);
+            data.push(metrics.sklearn.random_forest?.accuracy * 100 || 0);
+        }
+        if (metrics.tensorflow) {
+            data.push(metrics.tensorflow.model_sgd?.accuracy * 100 || 0);
+            data.push(metrics.tensorflow.model_adam?.accuracy * 100 || 0);
+            data.push(metrics.tensorflow.model_final?.test_accuracy * 100 || 0);
+        }
+
+        const colors = ['#f39c12', '#27ae60', '#3498db', '#9b59b6', '#e74c3c'];
+
+        if (metricsChart) {
+            metricsChart.destroy();
+        }
+
+        metricsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '準確率 (%)',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: colors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '準確率 (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: '各模型準確率對比'
+                    }
+                }
+            }
+        });
+    }
+
+    // 頁面載入時執行
+    document.addEventListener('DOMContentLoaded', loadMetrics);
+</script>
+{% endblock %}

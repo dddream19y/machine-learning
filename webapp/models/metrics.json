@@ -1,0 +1,43 @@
+{
+  "sklearn": {
+    "logistic_regression": {
+      "accuracy": 0.8403361344537815,
+      "roc_auc": 0.908111578797175,
+      "params": {
+        "C": 100,
+        "solver": "lbfgs"
+      }
+    },
+    "random_forest": {
+      "accuracy": 0.9117647058823529,
+      "roc_auc": 0.9724620104159236,
+      "params": {
+        "max_depth": 10,
+        "min_samples_split": 2,
+        "n_estimators": 300
+      }
+    }
+  },
+  "selected_features": [
+    "sex",
+    "chest pain type",
+    "resting bp s",
+    "cholesterol",
+    "fasting blood sugar",
+    "exercise angina",
+    "oldpeak",
+    "ST slope"
+  ],
+  "tensorflow": {
+    "model_sgd": {
+      "accuracy": 0.8873949646949768
+    },
+    "model_adam": {
+      "accuracy": 0.938655436038971
+    },
+    "model_final": {
+      "train_accuracy": 0.9492753744125366,
+      "test_accuracy": 0.8320000171661377
+    }
+  }
+}

@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}預測測試 - 心臟病預測系統{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-stethoscope me-2"></i>心臟病風險預測
+    </h2>
+    <p class="text-center text-muted mb-5">
+        請輸入您的健康指標，系統將使用機器學習模型進行風險評估
+    </p>
+
+    <div class="row">
+        <!-- Input Form -->
+        <div class="col-lg-7 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>輸入健康指標</h5>
+                </div>
+                <div class="card-body">
+                    <form id="predictForm">
+                        <div class="row">
+                            {% for name, info in features.items() %}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ info.label }}</label>
+                                {% if info.type == 'select' %}
+                                <select class="form-select" name="{{ name }}" id="{{ name }}">
+                                    {% for option in info.options %}
+                                    <option value="{{ option.value }}" {% if option.value==info.default %}selected{%
+                                        endif %}>
+                                        {{ option.label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% else %}
+                                <input type="number" class="form-control" name="{{ name }}" id="{{ name }}"
+                                    value="{{ info.default }}" {% if info.min is defined %}min="{{ info.min }}" {% endif
+                                    %} {% if info.max is defined %}max="{{ info.max }}" {% endif %} {% if info.step is
+                                    defined %}step="{{ info.step }}" {% endif %}>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="mb-3">
+                            <label class="form-label">選擇預測模型</label>
+                            <select class="form-select" name="model_type" id="model_type">
+                                <optgroup label="Sklearn 模型">
+                                    <option value="logistic_regression" selected>Logistic Regression</option>
+                                    <option value="random_forest">Random Forest</option>
+                                </optgroup>
+                                <optgroup label="TensorFlow 模型">
+                                    <option value="tf_model_sgd">TensorFlow - SGD Optimizer</option>
+                                    <option value="tf_model_adam">TensorFlow - Adam Optimizer</option>
+                                    <option value="tf_model_final">TensorFlow - Final Model</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>進行預測
+                                <span class="loading-spinner spinner-border spinner-border-sm ms-2"
+                                    role="status"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Panel -->
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-poll me-2"></i>預測結果</h5>
+                </div>
+                <div class="card-body" id="resultPanel">
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-hand-point-left fa-3x mb-3"></i>
+                        <p>請填寫左側表單並點擊「進行預測」</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Test -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-flask me-2"></i>快速測試範例</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">點擊下方按鈕填入測試數據：</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-danger btn-sm" onclick="fillTestData('high_risk')">
+                            <i class="fas fa-exclamation-triangle me-2"></i>高風險案例
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="fillTestData('low_risk')">
+                            <i class="fas fa-shield-alt me-2"></i>低風險案例
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="fillTestData('random')">
+                            <i class="fas fa-random me-2"></i>隨機數據
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 測試數據
+    const testCases = {
+        high_risk: {
+            'age': 63, 'sex': 1, 'chest pain type': 3, 'resting bp s': 145,
+            'cholesterol': 233, 'fasting blood sugar': 1, 'resting ecg': 0,
+            'max heart rate': 150, 'exercise angina': 0, 'oldpeak': 2.3, 'ST slope': 1
+        },
+        low_risk: {
+            'age': 35, 'sex': 0, 'chest pain type': 1, 'resting bp s': 110,
+            'cholesterol': 180, 'fasting blood sugar': 0, 'resting ecg': 0,
+            'max heart rate': 175, 'exercise angina': 0, 'oldpeak': 0.5, 'ST slope': 1
+        }
+    };
+
+    function fillTestData(type) {
+        let data;
+        if (type === 'random') {
+            data = {
+                'age': Math.floor(Math.random() * 50) + 30,
+                'sex': Math.floor(Math.random() * 2),
+                'chest pain type': Math.floor(Math.random() * 4) + 1,
+                'resting bp s': Math.floor(Math.random() * 60) + 100,
+                'cholesterol': Math.floor(Math.random() * 200) + 150,
+                'fasting blood sugar': Math.floor(Math.random() * 2),
+                'resting ecg': Math.floor(Math.random() * 3),
+                'max heart rate': Math.floor(Math.random() * 80) + 100,
+                'exercise angina': Math.floor(Math.random() * 2),
+                'oldpeak': (Math.random() * 4).toFixed(1),
+                'ST slope': Math.floor(Math.random() * 3) + 1
+            };
+        } else {
+            data = testCases[type];
+        }
+
+        for (const [key, value] of Object.entries(data)) {
+            const element = document.getElementById(key);
+            if (element) {
+                element.value = value;
+            }
+        }
+    }
+
+    // 表單提交
+    document.getElementById('predictForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const spinner = document.querySelector('.loading-spinner');
+        const resultPanel = document.getElementById('resultPanel');
+
+        spinner.style.display = 'inline-block';
+
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                resultPanel.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>${result.error}
+                </div>
+            `;
+            } else {
+                const isPositive = result.prediction === 1;
+                const bgClass = isPositive ? 'positive' : 'negative';
+                const icon = isPositive ? 'fa-exclamation-triangle' : 'fa-check-circle';
+
+                resultPanel.innerHTML = `
+                <div class="result-card ${bgClass} text-center">
+                    <i class="fas ${icon} fa-4x mb-3"></i>
+                    <h3 class="mb-3">${result.result_text}</h3>
+                    <div class="mb-3">
+                        <span class="display-4">${result.probability}%</span>
+                        <p class="mb-0">風險機率</p>
+                    </div>
+                    <hr style="border-color: rgba(255,255,255,0.3)">
+                    <p class="mb-0 small">
+                        <i class="fas fa-robot me-1"></i>
+                        使用模型: ${getModelName(result.model_used)}
+                    </p>
+                </div>
+            `;
+            }
+        } catch (error) {
+            resultPanel.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>預測失敗：${error.message}
+            </div>
+        `;
+        }
+
+        spinner.style.display = 'none';
+    });
+
+    function getModelName(modelKey) {
+        const names = {
+            'logistic_regression': 'Logistic Regression',
+            'random_forest': 'Random Forest',
+            'tf_model_sgd': 'TensorFlow (SGD)',
+            'tf_model_adam': 'TensorFlow (Adam)',
+            'tf_model_final': 'TensorFlow (Final)'
+        };
+        return names[modelKey] || modelKey;
+    }
+</script>
+{% endblock %}

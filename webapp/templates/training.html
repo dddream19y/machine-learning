@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}訓練過程 - 心臟病預測系統{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-brain me-2"></i>TensorFlow 模型訓練過程
+    </h2>
+    <p class="text-center text-muted mb-5">
+        查看深度學習模型的訓練曲線，包含 Loss 與 Accuracy 變化
+    </p>
+
+    <!-- Model Selection -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <label class="form-label">選擇模型查看訓練歷史：</label>
+                    <select class="form-select" id="modelSelect" onchange="updateCharts()">
+                        <option value="model_sgd">Model 1: SGD Optimizer (Binary CE)</option>
+                        <option value="model_adam">Model 2: Adam Optimizer (Categorical CE)</option>
+                        <option value="model_final" selected>Model 3: Final Model (Train/Val Split)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training Charts -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>準確率 (Accuracy)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="accChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>損失函數 (Loss)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="lossChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Architecture -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>模型架構</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <div class="p-3 bg-light rounded mb-2">
+                                <h6 class="mb-1">Input Layer</h6>
+                                <span class="badge bg-secondary">11 features</span>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex align-items-center">
+                            <i class="fas fa-arrow-right text-muted"></i>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 bg-info text-white rounded mb-2">
+                                <h6 class="mb-1">Dense Layer 1</h6>
+                                <span class="badge bg-light text-dark">10 units, ReLU</span>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex align-items-center">
+                            <i class="fas fa-arrow-right text-muted"></i>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 bg-primary text-white rounded mb-2">
+                                <h6 class="mb-1">Dense Layer 2</h6>
+                                <span class="badge bg-light text-dark">8 units, ReLU</span>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex align-items-center">
+                            <i class="fas fa-arrow-right text-muted"></i>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 bg-danger text-white rounded mb-2">
+                                <h6 class="mb-1">Output Layer</h6>
+                                <span class="badge bg-light text-dark" id="outputInfo">2 units, Softmax</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row text-center" id="modelInfo">
+                        <div class="col-md-4">
+                            <p class="mb-1 text-muted small">Optimizer</p>
+                            <h6 id="optimizerInfo">Adam</h6>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-1 text-muted small">Loss Function</p>
+                            <h6 id="lossInfo">Categorical Crossentropy</h6>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-1 text-muted small">Epochs</p>
+                            <h6 id="epochsInfo">150</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training Summary -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>訓練結果摘要</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center" id="trainingSummary">
+                        <div class="col-md-3">
+                            <div class="metric-value text-primary" id="finalTrainAcc">--</div>
+                            <p class="text-muted small">最終訓練準確率</p>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-value text-success" id="finalValAcc">--</div>
+                            <p class="text-muted small">最終驗證準確率</p>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-value text-warning" id="finalTrainLoss">--</div>
+                            <p class="text-muted small">最終訓練 Loss</p>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-value text-danger" id="finalValLoss">--</div>
+                            <p class="text-muted small">最終驗證 Loss</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let accChart = null;
+    let lossChart = null;
+    let trainingHistory = null;
+
+    const modelConfigs = {
+        'model_sgd': {
+            optimizer: 'SGD',
+            loss: 'Binary Crossentropy',
+            output: '1 unit, Sigmoid',
+            epochs: 150
+        },
+        'model_adam': {
+            optimizer: 'Adam',
+            loss: 'Categorical Crossentropy',
+            output: '2 units, Softmax',
+            epochs: 150
+        },
+        'model_final': {
+            optimizer: 'Adam',
+            loss: 'Categorical Crossentropy',
+            output: '2 units, Softmax',
+            epochs: 150
+        }
+    };
+
+    async function loadTrainingHistory() {
+        try {
+            const response = await fetch('/api/training-history');
+            trainingHistory = await response.json();
+
+            if (!trainingHistory.error) {
+                updateCharts();
+            }
+        } catch (error) {
+            console.error('載入訓練歷史失敗:', error);
+        }
+    }
+
+    function updateCharts() {
+        const modelKey = document.getElementById('modelSelect').value;
+        const config = modelConfigs[modelKey];
+
+        // 更新模型資訊
+        document.getElementById('optimizerInfo').textContent = config.optimizer;
+        document.getElementById('lossInfo').textContent = config.loss;
+        document.getElementById('outputInfo').textContent = config.output;
+        document.getElementById('epochsInfo').textContent = config.epochs;
+
+        if (!trainingHistory || !trainingHistory[modelKey]) {
+            console.log('無訓練歷史資料');
+            return;
+        }
+
+        const history = trainingHistory[modelKey];
+
+        // 準備數據
+        const epochs = Array.from({ length: history.accuracy.length }, (_, i) => i + 1);
+
+        // 更新 Accuracy 圖表
+        updateAccChart(epochs, history);
+
+        // 更新 Loss 圖表
+        updateLossChart(epochs, history);
+
+        // 更新摘要
+        updateSummary(history);
+    }
+
+    function updateAccChart(epochs, history) {
+        const ctx = document.getElementById('accChart').getContext('2d');
+
+        if (accChart) {
+            accChart.destroy();
+        }
+
+        const datasets = [{
+            label: 'Training Accuracy',
+            data: history.accuracy.map(v => v * 100),
+            borderColor: '#3498db',
+            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+            fill: true,
+            tension: 0.1
+        }];
+
+        if (history.val_accuracy) {
+            datasets.push({
+                label: 'Validation Accuracy',
+                data: history.val_accuracy.map(v => v * 100),
+                borderColor: '#e74c3c',
+                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                fill: true,
+                tension: 0.1
+            });
+        }
+
+        accChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: epochs,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Accuracy (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Epochs'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Training & Validation Accuracy'
+                    }
+                }
+            }
+        });
+    }
+
+    function updateLossChart(epochs, history) {
+        const ctx = document.getElementById('lossChart').getContext('2d');
+
+        if (lossChart) {
+            lossChart.destroy();
+        }
+
+        const datasets = [{
+            label: 'Training Loss',
+            data: history.loss,
+            borderColor: '#3498db',
+            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+            fill: true,
+            tension: 0.1
+        }];
+
+        if (history.val_loss) {
+            datasets.push({
+                label: 'Validation Loss',
+                data: history.val_loss,
+                borderColor: '#e74c3c',
+                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                fill: true,
+                tension: 0.1
+            });
+        }
+
+        lossChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: epochs,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Loss'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Epochs'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Training & Validation Loss'
+                    }
+                }
+            }
+        });
+    }
+
+    function updateSummary(history) {
+        const lastIdx = history.accuracy.length - 1;
+
+        document.getElementById('finalTrainAcc').textContent =
+            (history.accuracy[lastIdx] * 100).toFixed(1) + '%';
+
+        if (history.val_accuracy) {
+            document.getElementById('finalValAcc').textContent =
+                (history.val_accuracy[lastIdx] * 100).toFixed(1) + '%';
+        } else {
+            document.getElementById('finalValAcc').textContent = 'N/A';
+        }
+
+        document.getElementById('finalTrainLoss').textContent =
+            history.loss[lastIdx].toFixed(4);
+
+        if (history.val_loss) {
+            document.getElementById('finalValLoss').textContent =
+                history.val_loss[lastIdx].toFixed(4);
+        } else {
+            document.getElementById('finalValLoss').textContent = 'N/A';
+        }
+    }
+
+    // 頁面載入時執行
+    document.addEventListener('DOMContentLoaded', loadTrainingHistory);
+</script>
+{% endblock %}

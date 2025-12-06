@@ -12,6 +12,9 @@ keras
 matplotlib
 seaborn
 
+# Web Application
+flask
+
 # Utilities
 joblib
 ipykernel
