@@ -1,8 +1,6 @@
 import pandas as pd
 import numpy as np
 import seaborn as sns
-from keras import Sequential
-from keras.layers import Input, Dense
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score   #模型選取與交叉驗證
@@ -217,5 +215,6 @@ def predict_heart_disease(input_data):
 predict_heart_disease([63, 1, 3, 145, 233, 1, 0, 150, 0, 2.3, 1])
 
 predict_heart_disease([58, 1, 2, 150, 270, 0, 1, 111, 1, 2.5, 2])
+
 
 predict_heart_disease([49,0,3,160,180,0,0,156,0,1,2])
