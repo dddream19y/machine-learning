@@ -8,7 +8,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, chi2   #特徵選取
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score, roc_curve
 import joblib
 
@@ -218,3 +217,4 @@ predict_heart_disease([58, 1, 2, 150, 270, 0, 1, 111, 1, 2.5, 2])
 
 
 predict_heart_disease([49,0,3,160,180,0,0,156,0,1,2])
+
