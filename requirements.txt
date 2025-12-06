@@ -1,9 +1,17 @@
+# Core dependencies
 pandas
 numpy
-tensorflow
-matplotlib
-ipykernel
+
+# Machine Learning
 scikit-learn
-seaborn
 xgboost
+tensorflow
+keras
+
+# Visualization
+matplotlib
+seaborn
+
+# Utilities
 joblib
+ipykernel
