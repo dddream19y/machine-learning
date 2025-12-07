@@ -21,6 +21,48 @@ df.describe()
 
 print(df['target'].value_counts())
 
+#=========================================================
+# 1. 準備與切割資料 
+X = df.drop('target', axis=1)
+y = df['target']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=54)
+# 2. 建立、訓練模型
+baseline_model = LogisticRegression() 
+baseline_model.fit(X_train, y_train)
+# 預測
+predictions = baseline_model.predict(X_test)
+
+pd.DataFrame(
+    confusion_matrix(y_test, predictions),
+    index=["真的沒生病 0", "真的生病 1"],
+    columns=["預測沒生病 0", "預測生病 1"]
+)
+
+cm = confusion_matrix(y_test, predictions)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title("Confusion Matrix - Logistic Regression")
+plt.show()
+
+accuracy = []
+accuracy.append(accuracy_score(y_test, predictions))
+print("Accuracy:", accuracy)
+
+#ROC AUC Score
+print("ROC AUC Score:", roc_auc_score(y_test, predictions))
+#ROC Curve
+fpr, tpr, thresholds = roc_curve(y_test, predictions)
+plt.figure(figsize=(6,4))
+plt.plot(fpr, tpr, label='ROC Curve')
+plt.plot([0, 1], [0, 1], 'k--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve - Logistic Regression')
+plt.legend(loc='lower right')
+plt.show()
+#=========================================================
+
 X = df.drop('target', axis=1)
 y = df['target']
 
