@@ -3,17 +3,84 @@
 {% block title %}預測測試 - 心臟病預測系統{% endblock %}
 
 {% block content %}
+<!-- 加入列印專用的 CSS 樣式 -->
+<style>
+    /* 預設隱藏報告頭部，只有列印時才顯示 */
+    #printHeader {
+        display: none;
+    }
+
+    /* @media print 代表「只有列印時」才會生效的樣式 */
+    @media print {
+
+        /* 隱藏不需要的元素：導覽列、輸入表單、按鈕、頁尾 */
+        .navbar,
+        footer,
+        .input-section,
+        .btn,
+        .card-header,
+        .alert-info i {
+            display: none !important;
+        }
+
+        /* 讓結果區塊佔滿整張紙 */
+        .container,
+        .row,
+        .col-lg-5 {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex: none !important;
+        }
+
+        /* 顯示報告頭部 */
+        #printHeader {
+            display: block;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        /* 調整結果卡片的樣式，讓它適合列印（白底黑字比較省墨水） */
+        .result-card {
+            background: white !important;
+            color: black !important;
+            border: 1px solid #ddd;
+            box-shadow: none !important;
+        }
+
+        /* 確保字體顏色在列印時清晰 */
+        .display-4,
+        h3,
+        p {
+            color: black !important;
+        }
+
+        body {
+            background-color: white !important;
+        }
+    }
+</style>
+
 <div class="container py-5">
-    <h2 class="text-center mb-4">
+    <!-- 這是只有列印時會出現的標題 -->
+    <div id="printHeader">
+        <h2>🏥 心臟病風險評估報告</h2>
+        <p>檢測日期：<span id="printDate"></span></p>
+    </div>
+
+    <h2 class="text-center mb-4 input-section">
         <i class="fas fa-stethoscope me-2"></i>心臟病風險預測
     </h2>
-    <p class="text-center text-muted mb-5">
+    <p class="text-center text-muted mb-5 input-section">
         請輸入您的健康指標，系統將使用機器學習模型進行風險評估
     </p>
 
     <div class="row">
-        <!-- Input Form -->
-        <div class="col-lg-7 mb-4">
+        <!-- 輸入表單 (Input Form) - 加了 input-section 類別以便列印時隱藏 -->
+        <div class="col-lg-7 mb-4 input-section">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0"><i class="fas fa-edit me-2"></i>輸入健康指標</h5>
@@ -72,7 +139,7 @@
             </div>
         </div>
 
-        <!-- Result Panel -->
+        <!-- 結果面板 (Result Panel) -->
         <div class="col-lg-5">
             <div class="card">
                 <div class="card-header bg-dark text-white">
@@ -86,8 +153,8 @@
                 </div>
             </div>
 
-            <!-- Quick Test -->
-            <div class="card mt-4">
+            <!-- 快速測試按鈕 (列印時會隱藏) -->
+            <div class="card mt-4 input-section">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0"><i class="fas fa-flask me-2"></i>快速測試範例</h5>
                 </div>
@@ -113,17 +180,23 @@
 
 {% block extra_js %}
 <script>
-    // 測試數據
+    // 設定列印日期
+    document.getElementById('printDate').innerText = new Date().toLocaleDateString();
+
     const testCases = {
         high_risk: {
-            'age': 63, 'sex': 1, 'chest pain type': 3, 'resting bp s': 145,
-            'cholesterol': 233, 'fasting blood sugar': 1, 'resting ecg': 0,
-            'max heart rate': 150, 'exercise angina': 0, 'oldpeak': 2.3, 'ST slope': 1
+            // 典型高風險：65歲男性，無症狀，高血壓，高膽固醇，高血糖，
+            // 運動時有心絞痛，ST段明顯下降，ST斜率下降
+            'age': 65, 'sex': 1, 'chest pain type': 4, 'resting bp s': 160,
+            'cholesterol': 300, 'fasting blood sugar': 1, 'resting ecg': 2,
+            'max heart rate': 108, 'exercise angina': 1, 'oldpeak': 3.5, 'ST slope': 3
         },
         low_risk: {
-            'age': 35, 'sex': 0, 'chest pain type': 1, 'resting bp s': 110,
-            'cholesterol': 180, 'fasting blood sugar': 0, 'resting ecg': 0,
-            'max heart rate': 175, 'exercise angina': 0, 'oldpeak': 0.5, 'ST slope': 1
+            // 典型低風險：32歲女性，典型心絞痛，正常血壓，正常膽固醇，正常血糖，
+            // 運動時無心絞痛，ST段正常，ST斜率上升
+            'age': 32, 'sex': 0, 'chest pain type': 1, 'resting bp s': 115,
+            'cholesterol': 165, 'fasting blood sugar': 0, 'resting ecg': 0,
+            'max heart rate': 185, 'exercise angina': 0, 'oldpeak': 0.0, 'ST slope': 1
         }
     };
 
@@ -155,7 +228,104 @@
         }
     }
 
-    // 表單提交
+    function generateAdvice(data) {
+        let adviceList = [];
+
+        const bp = parseInt(data['resting bp s']);
+        if (bp > 140) adviceList.push(`<li><strong>血壓偏高 (${bp} mmHg)</strong>：建議減少鹽分攝取，避免油膩食物。</li>`);
+        else if (bp < 90) adviceList.push(`<li><strong>血壓偏低 (${bp} mmHg)</strong>：請攝取足夠水分，注意頭暈。</li>`);
+
+        const chol = parseInt(data['cholesterol']);
+        if (chol > 240) adviceList.push(`<li><strong>膽固醇過高 (${chol} mg/dl)</strong>：建議減少紅肉攝取，多運動。</li>`);
+        else if (chol > 200) adviceList.push(`<li><strong>膽固醇偏高 (${chol} mg/dl)</strong>：請注意飲食均衡。</li>`);
+
+        const fbs = parseInt(data['fasting blood sugar']);
+        if (fbs == 1) adviceList.push(`<li><strong>空腹血糖偏高</strong>：請控制糖分攝取，這是糖尿病風險因子。</li>`);
+
+        const maxHR = parseInt(data['max heart rate']);
+        if (maxHR < 100) adviceList.push(`<li><strong>最大心率偏低 (${maxHR})</strong>：建議諮詢醫師評估心臟功能。</li>`);
+
+        if (adviceList.length === 0) {
+            return `<div class="alert alert-success mt-3 text-start">
+                        <h5><i class="fas fa-check-circle me-2"></i>健康狀況良好</h5>
+                        <p class="mb-0">您的主要生理指標都在正常範圍內。</p>
+                    </div>`;
+        }
+
+        return `<div class="alert alert-info mt-3 text-start">
+                    <h5><i class="fas fa-user-md me-2"></i>醫師小叮嚀：</h5>
+                    <ul class="mb-0 ps-3">
+                        ${adviceList.join('')}
+                    </ul>
+                </div>`;
+    }
+
+    // --- 新增：畫雷達圖的函數 (我把這段移進來了) ---
+    let myRadarChart = null;
+
+    function drawRadarChart(data) {
+        // 確保畫布存在才執行
+        const canvas = document.getElementById('radarChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('chartContainer');
+        container.style.display = 'block';
+
+        // 如果圖表已經存在，先銷毀它 (不然滑鼠移上去會閃爍)
+        if (myRadarChart) {
+            myRadarChart.destroy();
+        }
+
+        // 準備數據 (這裡做了一些簡單的標準化，讓圖好看一點)
+        const userBP = parseInt(data['resting bp s']);
+        const userChol = parseInt(data['cholesterol']);
+        const userHR = parseInt(data['max heart rate']);
+
+        // 避免圖表破表，設定上限
+        const normalize = (val, standard) => Math.min((val / standard) * 100, 150);
+
+        myRadarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['靜息血壓', '膽固醇', '最大心率', '年齡風險', '空腹血糖'],
+                datasets: [{
+                    label: '您的數值',
+                    data: [
+                        normalize(userBP, 120),
+                        normalize(userChol, 200),
+                        normalize(userHR, 150),
+                        normalize(parseInt(data['age']), 60),
+                        parseInt(data['fasting blood sugar']) === 1 ? 130 : 80
+                    ],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
+                }, {
+                    label: '標準參考線',
+                    data: [100, 100, 100, 100, 100],
+                    borderColor: 'rgba(200, 200, 200, 0.8)',
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { display: false },
+                        suggestedMin: 0,
+                        suggestedMax: 140,
+                        ticks: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
     document.getElementById('predictForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -173,9 +343,7 @@
         try {
             const response = await fetch('/predict', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
 
@@ -184,13 +352,15 @@
             if (result.error) {
                 resultPanel.innerHTML = `
                 <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle me-2"></i>${result.error}
+                    <i class="fas fa-exclamation-circle me-2"></i>預測失敗：${result.error}
                 </div>
             `;
             } else {
                 const isPositive = result.prediction === 1;
                 const bgClass = isPositive ? 'positive' : 'negative';
                 const icon = isPositive ? 'fa-exclamation-triangle' : 'fa-check-circle';
+
+                const adviceHtml = generateAdvice(data);
 
                 resultPanel.innerHTML = `
                 <div class="result-card ${bgClass} text-center">
@@ -206,7 +376,28 @@
                         使用模型: ${getModelName(result.model_used)}
                     </p>
                 </div>
+                ${adviceHtml}
+
+                <!-- 雷達圖區塊 - 修正：移除這裡的強制 300px 高度，改成包在 canvas 外面 -->
+                <div class="mt-4" id="chartContainer" style="display: none;">
+                    <h5 class="text-start"><i class="fas fa-chart-pie me-2"></i>數值分析雷達圖</h5>
+                    <!-- 新增一個 wrapper 來控制高度，這樣才不會跟文字打架 -->
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                    <p class="text-muted small mt-2">藍色區域：您的數值 | 灰色虛線：一般標準參考值</p>
+                </div>
+
+                <!-- 下載按鈕 -->
+                <div class="d-grid gap-2 mt-3">
+                    <button onclick="window.print()" class="btn btn-secondary">
+                        <i class="fas fa-file-pdf me-2"></i>下載/列印檢測報告
+                    </button>
+                </div>
             `;
+
+                // 🔥 關鍵修正：在這裡呼叫畫圖函數（因為上面的 innerHTML 執行完，畫布才存在）
+                setTimeout(() => drawRadarChart(data), 100);
             }
         } catch (error) {
             resultPanel.innerHTML = `
@@ -215,7 +406,6 @@
             </div>
         `;
         }
-
         spinner.style.display = 'none';
     });
 
